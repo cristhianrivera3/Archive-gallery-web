@@ -1,0 +1,16 @@
+[
+  {
+    "nombre": "Chaqueta Negra",
+    "descripcion": "Chaqueta de cuero sintético, estilo urbano.",
+    "precio": 120000,
+    "categoria": "Chaquetas",
+    "imagen": "https://via.placeholder.com/300"
+  },
+  {
+    "nombre": "Camisa Blanca",
+    "descripcion": "Camisa de algodón oversize.",
+    "precio": 80000,
+    "categoria": "Camisas",
+    "imagen": "https://via.placeholder.com/300"
+  }
+]

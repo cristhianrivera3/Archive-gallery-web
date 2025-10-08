@@ -1,0 +1,22 @@
+<%- include('layout') %>
+
+<section class="productos">
+  <% if (productos.length === 0) { %>
+    <p>No hay productos disponibles en este momento.</p>
+  <% } else { %>
+    <div class="grid">
+      <% productos.forEach(producto => { %>
+        <div class="card">
+          <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>">
+          <h2><%= producto.nombre %></h2>
+          <p>Talla: <%= producto.talla %></p>
+          <p>Precio: $<%= producto.precio.toLocaleString() %> COP</p>
+          <p class="<%= producto.estado === 'Vendido' ? 'vendido' : 'disponible' %>">
+            <%= producto.estado %>
+          </p>
+          <a href="/producto/<%= producto.id %>" class="ver-detalle">Ver detalle</a>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
