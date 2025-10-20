@@ -1,0 +1,302 @@
+<section class="admin-section">
+    <div class="admin-container">
+        <h2 class="section-title">PANEL DE ADMINISTRACIÓN</h2>
+        <p class="admin-subtitle">Gestiona los productos de <strong>ČOMMØN PL4CE STOR3!</strong></p>
+        
+        <div class="admin-actions">
+            <button class="cta-button" onclick="showAddProductForm()">+ AGREGAR PRODUCTO</button>
+        </div>
+
+        <!-- Formulario para agregar producto (inicialmente oculto) -->
+        <div id="addProductForm" class="add-product-form" style="display: none;">
+            <h3>NUEVO PRODUCTO</h3>
+            <form id="productForm" class="product-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>NOMBRE DEL PRODUCTO</label>
+                        <input type="text" name="nombre" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>DESCRIPCIÓN</label>
+                        <textarea name="descripcion" required class="form-textarea"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>PRECIO</label>
+                        <input type="number" name="precio" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>CATEGORÍA</label>
+                        <select name="categoria" required class="form-select">
+                            <option value="Streetwear">STREETWEAR</option>
+                            <option value="Techwear">TECHWEAR</option>
+                            <option value="Oversize">OVERSIZE</option>
+                            <option value="Vintage">VINTAGE</option>
+                            <option value="Accesorios">ACCESORIOS</option>
+                            <option value="Calzado">CALZADO</option>
+                            <option value="Exclusivos">EXCLUSIVOS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>TALLA</label>
+                        <select name="talla" required class="form-select">
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                            <option value="Única">ÚNICA</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>STOCK</label>
+                        <input type="number" name="stock" required class="form-input" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>ESTILO</label>
+                        <select name="estilo" class="form-select">
+                            <option value="Urbano">URBANO</option>
+                            <option value="Futurista">FUTURISTA</option>
+                            <option value="Vintage">VINTAGE</option>
+                            <option value="Oversize">OVERSIZE</option>
+                            <option value="Limited Edition">LIMITED EDITION</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>IMAGEN (URL)</label>
+                        <input type="url" name="imagen" class="form-input" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">GUARDAR PRODUCTO</button>
+                    <button type="button" class="btn-secondary" onclick="hideAddProductForm()">CANCELAR</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de Productos -->
+        <div class="admin-products">
+            <h3>PRODUCTOS EXISTENTES</h3>
+            <% if (productos.length === 0) { %>
+                <div class="no-products">
+                    <p>No hay productos en la base de datos</p>
+                </div>
+            <% } else { %>
+                <div class="admin-products-grid">
+                    <% productos.forEach(producto => { %>
+                        <div class="admin-product-card">
+                            <div class="admin-product-image">
+                                <img src="<%= producto.imagen || '/img/placeholder.jpg' %>" alt="<%= producto.nombre %>">
+                            </div>
+                            <div class="admin-product-info">
+                                <h4><%= producto.nombre %></h4>
+                                <p class="admin-product-price">$<%= producto.precio.toLocaleString() %></p>
+                                <p class="admin-product-stock">Stock: <%= producto.stock %></p>
+                                <p class="admin-product-category"><%= producto.categoria %> • <%= producto.talla %></p>
+                            </div>
+                            <div class="admin-product-actions">
+                                <button class="btn-action btn-edit">EDITAR</button>
+                                <button class="btn-action btn-delete" onclick="deleteProduct('<%= producto._id %>')">ELIMINAR</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-section {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-subtitle {
+    text-align: center;
+    color: var(--texto-medio);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.admin-actions {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.add-product-form {
+    background: var(--crema-suave);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 2px solid var(--dorado);
+    margin-bottom: 3rem;
+}
+
+.add-product-form h3 {
+    color: var(--marron-oscuro);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--marron-oscuro);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.form-input, .form-select, .form-textarea {
+    padding: 0.8rem;
+    border: 1px solid var(--borde-suave);
+    border-radius: 4px;
+    background: var(--crema-principal);
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--dorado);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.admin-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.admin-product-card {
+    background: var(--crema-suave);
+    border: 1px solid var(--borde-suave);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.admin-product-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.admin-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-product-info {
+    flex: 1;
+}
+
+.admin-product-info h4 {
+    color: var(--acento-urbano);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.admin-product-price {
+    font-weight: 700;
+    color: var(--marron-elegante);
+    font-family: 'Courier New', monospace;
+}
+
+.admin-product-stock, .admin-product-category {
+    color: var(--texto-medio);
+    font-size: 0.9rem;
+}
+
+.admin-product-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-edit {
+    background: var(--dorado);
+    color: var(--acento-urbano);
+}
+
+.btn-edit:hover {
+    background: var(--marron-elegante);
+    color: white;
+}
+
+.btn-delete {
+    background: #FF6B6B;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #FF5252;
+}
+</style>
+
+<script>
+function showAddProductForm() {
+    document.getElementById('addProductForm').style.display = 'block';
+}
+
+function hideAddProductForm() {
+    document.getElementById('addProductForm').style.display = 'none';
+}
+
+function deleteProduct(productId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        // Aquí iría la lógica para eliminar el producto
+        console.log('Eliminar producto:', productId);
+        alert('Funcionalidad de eliminar en desarrollo');
+    }
+}
+
+// Manejar el envío del formulario
+document.getElementById('productForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Aquí iría la lógica para guardar el producto
+    alert('Funcionalidad de guardar en desarrollo');
+    hideAddProductForm();
+});
+</script>
