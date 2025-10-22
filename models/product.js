@@ -1,74 +1,154 @@
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
-  nombre: {
+  name: {
     type: String,
     required: [true, 'El nombre del producto es requerido'],
     trim: true,
     maxlength: [100, 'El nombre no puede exceder 100 caracteres']
   },
-  descripcion: {
+  description: {
     type: String,
     required: [true, 'La descripción es requerida'],
-    trim: true,
-    maxlength: [500, 'La descripción no puede exceder 500 caracteres']
+    maxlength: [1000, 'La descripción no puede exceder 1000 caracteres']
   },
-  precio: {
+  price: {
     type: Number,
     required: [true, 'El precio es requerido'],
     min: [0, 'El precio no puede ser negativo']
   },
-  categoria: {
-    type: String,
-    required: [true, 'La categoría es requerida'],
-    enum: ['Streetwear', 'Techwear', 'Oversize', 'Vintage', 'Accesorios', 'Calzado', 'Exclusivos'],
-    default: 'Streetwear'
+  originalPrice: {
+    type: Number,
+    min: [0, 'El precio original no puede ser negativo']
   },
-  talla: {
+  category: {
     type: String,
     required: true,
-    enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Única']
+    enum: ['Camisetas', 'Pantalones', 'Chaquetas', 'Zapatos', 'Accesorios', 'Sudaderas'],
+    index: true
   },
+  subcategory: {
+    type: String,
+    trim: true
+  },
+  brand: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  size: {
+    type: String,
+    required: true,
+    enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Única'],
+    index: true
+  },
+  condition: {
+    type: String,
+    required: true,
+    enum: ['Nuevo', 'Como nuevo', 'Buen estado', 'Desgastado'],
+    default: 'Buen estado'
+  },
+  color: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  material: {
+    type: String,
+    trim: true
+  },
+  images: [{
+    url: String,
+    alt: String,
+    isPrimary: { type: Boolean, default: false }
+  }],
   stock: {
     type: Number,
     required: true,
     min: 0,
-    default: 0
+    default: 1
   },
-  imagen: {
+  sku: {
     type: String,
-    default: '/img/placeholder.jpg'
+    unique: true,
+    sparse: true
   },
-  destacado: {
+  tags: [String],
+  featured: {
     type: Boolean,
     default: false
   },
-  estilo: {
-    type: String,
-    enum: ['Urbano', 'Futurista', 'Vintage', 'Oversize', 'Limited Edition'],
-    default: 'Urbano'
+  active: {
+    type: Boolean,
+    default: true
   },
-  fechaCreacion: {
-    type: Date,
-    default: Date.now
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  dimensions: {
+    width: Number,
+    height: Number,
+    depth: Number
+  },
+  weight: Number,
+  shipping: {
+    free: { type: Boolean, default: false },
+    cost: { type: Number, default: 0 }
+  },
+  stats: {
+    views: { type: Number, default: 0 },
+    favorites: { type: Number, default: 0 },
+    sales: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+    reviewCount: { type: Number, default: 0 }
   }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Índices para búsqueda
+productSchema.index({ name: 'text', description: 'text', brand: 'text' });
+productSchema.index({ category: 1, price: 1 });
+productSchema.index({ featured: -1, createdAt: -1 });
+productSchema.index({ seller: 1, createdAt: -1 });
+
+// Virtual para calcular descuento
+productSchema.virtual('discountPercentage').get(function() {
+  if (!this.originalPrice || this.originalPrice <= this.price) return 0;
+  return Math.round(((this.originalPrice - this.price) / this.originalPrice) * 100);
+});
+
+// Virtual para reviews
+productSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'product'
 });
 
 // Método para verificar disponibilidad
-productSchema.methods.estaDisponible = function() {
-  return this.stock > 0;
+productSchema.methods.isAvailable = function() {
+  return this.stock > 0 && this.active;
 };
 
 // Método estático para productos destacados
-productSchema.statics.obtenerDestacados = function() {
-  return this.find({ destacado: true, stock: { $gt: 0 } });
+productSchema.statics.getFeatured = function(limit = 8) {
+  return this.find({ featured: true, active: true, stock: { $gt: 0 } })
+    .limit(limit)
+    .populate('seller', 'username rating')
+    .sort({ createdAt: -1 });
 };
 
-// Método estático para productos por estilo
-productSchema.statics.obtenerPorEstilo = function(estilo) {
-  return this.find({ estilo: estilo, stock: { $gt: 0 } });
-};
+// Middleware para generar SKU
+productSchema.pre('save', async function(next) {
+  if (!this.sku) {
+    const count = await this.constructor.countDocuments();
+    this.sku = `CP${String(count + 1).padStart(6, '0')}`;
+  }
+  next();
+});
 
-const Product = mongoose.model('Product', productSchema);
-
-export default Product;
+export default mongoose.model('Product', productSchema);

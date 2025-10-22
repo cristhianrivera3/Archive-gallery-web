@@ -3,35 +3,72 @@ import expressLayouts from 'express-ejs-layouts';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 
-// ================================ 
-// 🔧 CONFIGURACIÓN DE PATHS
-// ================================
+// Configuración de paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Importar configuración y middleware
+import connectDB, { checkDBHealth } from './config/database.js';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+
+// Importar rutas
+import productRoutes from './routes/productRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
 dotenv.config();
 
 // ================================
-// 🔗 CONEXIÓN A MONGODB MEJORADA
+// 🔗 CONEXIÓN A MONGODB
 // ================================
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/commonplace';
-
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ Conectado a MongoDB Atlas'))
-  .catch(err => {
-    console.error('❌ Error al conectar a MongoDB:', err.message);
-    console.log('🔄 Usando datos de prueba temporales...');
-  });
+connectDB();
 
 // ================================
-// ⚙️ MIDDLEWARES
+// ⚙️ MIDDLEWARES DE SEGURIDAD Y PERFORMANCE
 // ================================
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://via.placeholder.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+      connectSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por ventana
+  message: {
+    success: false,
+    error: 'Demasiadas requests desde esta IP, intenta de nuevo en 15 minutos'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use('/api/', limiter);
+
+// Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // ================================
 // 🧩 CONFIGURACIÓN DE EJS Y LAYOUTS
@@ -42,48 +79,67 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 
 // ================================
-// 📋 MODELO DE PRODUCTO TEMPORAL
+// 📋 DATOS DE PRUEBA (FALLBACK)
 // ================================
-// Datos de prueba si MongoDB falla
 const productosPrueba = [
   {
     _id: '1',
-    nombre: 'Camiseta Básica',
-    descripcion: 'Camiseta de algodón 100% premium',
-    precio: 29.99,
-    imagen: '/img/placeholder.jpg',
-    stock: 15,
-    fechaCreacion: new Date()
+    name: 'Camiseta Oversize Negra',
+    description: 'Camiseta 100% algodón con corte urbano oversize. Perfecta para looks casuales.',
+    price: 89000,
+    images: [{ url: '/img/placeholder.jpg', alt: 'Camiseta Oversize Negra' }],
+    stock: 5,
+    category: 'Camisetas',
+    size: 'L',
+    condition: 'Como nuevo',
+    brand: 'Streetwear Co',
+    createdAt: new Date(),
+    active: true,
+    stats: { views: 0, favorites: 0, sales: 0 }
   },
   {
     _id: '2',
-    nombre: 'Taza Personalizada', 
-    descripcion: 'Taza de cerámica con diseño exclusivo',
-    precio: 19.99,
-    imagen: '/img/placeholder.jpg',
-    stock: 8,
-    fechaCreacion: new Date()
+    name: 'Chaqueta Techwear Futurista', 
+    description: 'Chaqueta técnica impermeable con múltiples bolsillos y diseño futurista.',
+    price: 210000,
+    images: [{ url: '/img/placeholder.jpg', alt: 'Chaqueta Techwear' }],
+    stock: 2,
+    category: 'Chaquetas',
+    size: 'M',
+    condition: 'Nuevo',
+    brand: 'TechWear',
+    createdAt: new Date(),
+    active: true,
+    stats: { views: 0, favorites: 0, sales: 0 }
   },
   {
     _id: '3',
-    nombre: 'Sticker Pack',
-    descripcion: 'Pack de stickers variados',
-    precio: 9.99,
-    imagen: '/img/placeholder.jpg',
-    stock: 25,
-    fechaCreacion: new Date()
+    name: 'Hoodie Essentials Beige',
+    description: 'Hoodie básico premium en color beige, tejido fleece de alta calidad.',
+    price: 120000,
+    images: [{ url: '/img/placeholder.jpg', alt: 'Hoodie Essentials' }],
+    stock: 8,
+    category: 'Sudaderas',
+    size: 'XL',
+    condition: 'Buen estado',
+    brand: 'Essentials',
+    createdAt: new Date(),
+    active: true,
+    stats: { views: 0, favorites: 0, sales: 0 }
   }
 ];
 
 // Función para obtener productos (intenta MongoDB primero, luego datos de prueba)
 async function obtenerProductos() {
   try {
-    // Intenta importar el modelo dinámicamente
-    const { default: Product } = await import('./models/product.js');
-    const productos = await Product.find().sort({ fechaCreacion: -1 });
+    const { default: Product } = await import('./models/Product.js');
+    const productos = await Product.find({ active: true, stock: { $gt: 0 } })
+      .populate('seller', 'username profile.avatar')
+      .sort({ createdAt: -1 })
+      .limit(12);
     return productos;
   } catch (error) {
-    console.log('📝 Usando datos de prueba temporales');
+    console.log('📝 Usando datos de prueba temporales - MongoDB no disponible');
     return productosPrueba;
   }
 }
@@ -91,8 +147,9 @@ async function obtenerProductos() {
 // Función para obtener un producto por ID
 async function obtenerProductoPorId(id) {
   try {
-    const { default: Product } = await import('./models/product.js');
-    const producto = await Product.findById(id);
+    const { default: Product } = await import('./models/Product.js');
+    const producto = await Product.findById(id)
+      .populate('seller', 'username profile.avatar sellerProfile');
     return producto;
   } catch (error) {
     console.log('📝 Buscando en datos de prueba temporales');
@@ -101,7 +158,7 @@ async function obtenerProductoPorId(id) {
 }
 
 // ================================
-// 🚏 RUTAS PRINCIPALES
+// 🚏 RUTAS DE VISTAS (EJS)
 // ================================
 
 // Ruta principal - Página de inicio
@@ -110,13 +167,15 @@ app.get('/', async (req, res) => {
     const productos = await obtenerProductos();
     res.render('index', { 
       title: 'INICIO - ČOMMØN PL4CE STOR3!',
-      productos: productos
+      productos: productos,
+      dbConnected: checkDBHealth()
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error cargando página principal:', error);
     res.render('index', { 
       title: 'INICIO - ČOMMØN PL4CE STOR3!',
-      productos: productosPrueba 
+      productos: productosPrueba,
+      dbConnected: false
     });
   }
 });
@@ -134,7 +193,7 @@ app.get('/producto/:id', async (req, res) => {
     }
     
     res.render('product', { 
-      title: producto.nombre + ' - ČOMMØN PL4CE STOR3!',
+      title: producto.name + ' - ČOMMØN PL4CE STOR3!',
       producto: producto
     });
   } catch (error) {
@@ -152,38 +211,57 @@ app.get('/admin', async (req, res) => {
     const productos = await obtenerProductos();
     res.render('admin', { 
       title: 'ADMIN - ČOMMØN PL4CE STOR3!',
-      productos: productos
+      productos: productos,
+      dbConnected: checkDBHealth()
     });
   } catch (error) {
     console.error('Error en admin:', error);
     res.render('admin', { 
       title: 'ADMIN - ČOMMØN PL4CE STOR3!',
-      productos: productosPrueba
+      productos: productosPrueba,
+      dbConnected: false
     });
   }
 });
 
-// Ruta para agregar producto (POST)
+// Ruta para agregar producto (POST básico para vistas)
 app.post('/admin/productos', async (req, res) => {
   try {
-    const { nombre, descripcion, precio, stock, imagen } = req.body;
+    const { name, description, price, stock, category, size, condition, brand } = req.body;
     
-    // Si MongoDB está conectado, guarda en la base de datos
     try {
-      const { default: Product } = await import('./models/product.js');
+      const { default: Product } = await import('./models/Product.js');
+      const { default: User } = await import('./models/User.js');
+      
+      // Usar un usuario temporal o crear uno por defecto
+      let seller = await User.findOne().sort({ createdAt: 1 });
+      if (!seller) {
+        seller = await User.create({
+          username: 'admin',
+          email: 'admin@commonplace.com',
+          password: 'temp123',
+          role: 'admin'
+        });
+      }
+      
       const nuevoProducto = new Product({
-        nombre,
-        descripcion,
-        precio: parseFloat(precio),
-        stock: parseInt(stock),
-        imagen: imagen || '/img/placeholder.jpg'
+        name: name || 'Producto Sin Nombre',
+        description: description || 'Descripción no disponible',
+        price: parseFloat(price) || 0,
+        stock: parseInt(stock) || 1,
+        category: category || 'Camisetas',
+        size: size || 'M',
+        condition: condition || 'Buen estado',
+        brand: brand || 'Generico',
+        images: [{ url: '/img/placeholder.jpg', alt: name || 'Producto' }],
+        seller: seller._id
       });
       
       await nuevoProducto.save();
       console.log('✅ Producto guardado en MongoDB');
     } catch (dbError) {
-      console.log('📝 Guardando en datos temporales (no persistente)');
-      // En datos temporales, solo simularíamos el guardado
+      console.log('📝 MongoDB no disponible - producto no persistido');
+      // En modo fallback, no persistimos los datos
     }
     
     res.redirect('/admin');
@@ -193,40 +271,107 @@ app.post('/admin/productos', async (req, res) => {
   }
 });
 
-// Ruta de API para productos (JSON)
-app.get('/api/productos', async (req, res) => {
-  try {
-    const productos = await obtenerProductos();
-    res.json(productos);
-  } catch (error) {
-    res.json(productosPrueba);
-  }
-});
+// ================================
+// 📡 RUTAS API (REST)
+// ================================
+
+// Usar rutas API
+app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Ruta de salud/estado
 app.get('/health', (req, res) => {
-  res.json({ 
+  const health = {
     status: 'OK', 
     message: 'ČOMMØN PL4CE STOR3! funcionando',
     timestamp: new Date().toISOString(),
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    uptime: Math.floor(process.uptime()),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + 'MB'
+    },
+    version: '1.0.0'
+  };
+  
+  res.json(health);
+});
+
+// Ruta de información del sistema
+app.get('/api/info', (req, res) => {
+  res.json({
+    app: 'ČOMMØN PL4CE STOR3!',
+    version: '1.0.0',
+    description: 'Tienda de ropa urbana de segunda mano',
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      products: '/api/products',
+      auth: '/api/auth',
+      users: '/api/users',
+      orders: '/api/orders',
+      reviews: '/api/reviews'
+    }
   });
 });
 
-// Manejo de errores 404
-app.use((req, res) => {
+// ================================
+// 🛡️ MANEJO DE ERRORES
+// ================================
+
+// 404 handler para vistas
+app.use('/admin', (req, res) => {
   res.status(404).render('error', {
     title: 'Página No Encontrada',
-    message: 'La página que buscas no existe.'
+    message: 'La página de administración que buscas no existe.'
   });
 });
 
+// 404 handler global
+app.use(notFound);
+
+// Error handler global
+app.use(errorHandler);
+
 // ================================
-// 🧱 SERVIDOR
+// 🧱 INICIO DEL SERVIDOR
 // ================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 ČOMMØN PL4CE STOR3! funcionando en http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔧 Modo: ${process.env.NODE_ENV || 'development'}`);
+
+// Función de inicio
+const startServer = () => {
+  app.listen(PORT, () => {
+    console.log('='.repeat(60));
+    console.log('🚀 ČOMMØN PL4CE STOR3! - Servidor Iniciado');
+    console.log('='.repeat(60));
+    console.log(`📍 URL: http://localhost:${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 MongoDB: ${mongoose.connection.readyState === 1 ? '✅ Conectado' : '❌ Desconectado'}`);
+    console.log(`🛡️  Security: Helmet, Compression, Rate Limiting activados`);
+    console.log('');
+    console.log('📡 Endpoints disponibles:');
+    console.log(`   🏠 Vistas:    http://localhost:${PORT}`);
+    console.log(`   🛍️  Productos: http://localhost:${PORT}/api/products`);
+    console.log(`   🔐 Auth:      http://localhost:${PORT}/api/auth`);
+    console.log(`   ❤️  Health:     http://localhost:${PORT}/health`);
+    console.log('');
+    console.log('⚡ Usa Ctrl+C para detener el servidor');
+    console.log('='.repeat(60));
+  });
+};
+
+// Manejo de graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Recibida señal de terminación...');
+  await mongoose.connection.close();
+  console.log('✅ Conexiones cerradas - Servidor terminado');
+  process.exit(0);
 });
+
+// Iniciar servidor
+startServer();
+
+export default app;
