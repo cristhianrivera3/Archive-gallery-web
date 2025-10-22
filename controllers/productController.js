@@ -1,17 +1,10 @@
-// routes/ProductRoutes.js
-import express from 'express';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
-import { protect, authorize } from '../middleware/auth.js';
-import { validateProduct, validateObjectId } from '../middleware/validation.js';
-import { uploadMultiple, handleUploadError, processUploadedFiles } from '../middleware/upload.js';
 
-const router = express.Router();
-
-// @desc    Get all products
+// @desc    Get all products with filtering, pagination and search
 // @route   GET /api/products
 // @access  Public
-router.get('/', async (req, res) => {
+export const getProducts = async (req, res) => {
   try {
     const {
       category,
@@ -50,9 +43,9 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    // Execute query
+    // Execute query with pagination
     const products = await Product.find(query)
-      .populate('seller', 'username sellerProfile.rating profile.avatar')
+      .populate('seller', 'username profile sellerProfile.rating stats.totalSales')
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -95,15 +88,16 @@ router.get('/', async (req, res) => {
       error: 'Error al obtener los productos'
     });
   }
-});
+};
 
 // @desc    Get single product
 // @route   GET /api/products/:id
 // @access  Public
-router.get('/:id', validateObjectId, async (req, res) => {
+export const getProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate('seller', 'username profile sellerProfile rating stats verification');
+      .populate('seller', 'username profile avatar sellerProfile stats verification')
+      .populate('reviews');
 
     if (!product || !product.active) {
       return res.status(404).json({
@@ -128,135 +122,94 @@ router.get('/:id', validateObjectId, async (req, res) => {
       error: 'Error al obtener el producto'
     });
   }
-});
+};
 
-// @desc    Create product
+// @desc    Create new product
 // @route   POST /api/products
 // @access  Private (Seller/Admin)
-router.post('/', 
-  protect, 
-  authorize('seller', 'admin'),
-  uploadMultiple('images', 5),
-  handleUploadError,
-  processUploadedFiles,
-  validateProduct,
-  async (req, res) => {
-    try {
-      // Add seller to request body
-      req.body.seller = req.user.id;
+export const createProduct = async (req, res) => {
+  try {
+    // Add seller to request body
+    req.body.seller = req.user.id;
 
-      // Process uploaded images
-      if (req.files && req.files.length > 0) {
-        req.body.images = req.files.map((file, index) => ({
-          url: `/uploads/${file.filename}`,
-          alt: req.body.name || `Product image ${index + 1}`,
-          isPrimary: index === 0
-        }));
-      }
+    const product = await Product.create(req.body);
 
-      const product = await Product.create(req.body);
+    // Update user stats
+    await User.findByIdAndUpdate(req.user.id, {
+      $inc: { 'stats.productsListed': 1 }
+    });
 
-      // Update user stats
-      await User.findByIdAndUpdate(req.user.id, {
-        $inc: { 'stats.productsListed': 1 }
-      });
+    // Populate seller info
+    await product.populate('seller', 'username profile');
 
-      // Populate seller info
-      await product.populate('seller', 'username profile');
+    res.status(201).json({
+      success: true,
+      data: product
+    });
 
-      res.status(201).json({
-        success: true,
-        data: product
-      });
-
-    } catch (error) {
-      console.error('Create product error:', error);
-      
-      if (error.name === 'ValidationError') {
-        const messages = Object.values(error.errors).map(val => val.message);
-        return res.status(400).json({
-          success: false,
-          error: messages
-        });
-      }
-
-      res.status(500).json({
+  } catch (error) {
+    console.error('Create product error:', error);
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
         success: false,
-        error: 'Error al crear el producto'
+        error: messages
       });
     }
+
+    res.status(500).json({
+      success: false,
+      error: 'Error al crear el producto'
+    });
   }
-);
+};
 
 // @desc    Update product
 // @route   PUT /api/products/:id
 // @access  Private (Owner/Admin)
-router.put('/:id', 
-  protect, 
-  validateObjectId,
-  uploadMultiple('images', 5),
-  handleUploadError,
-  processUploadedFiles,
-  validateProduct,
-  async (req, res) => {
-    try {
-      let product = await Product.findById(req.params.id);
+export const updateProduct = async (req, res) => {
+  try {
+    let product = await Product.findById(req.params.id);
 
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: 'Producto no encontrado'
-        });
-      }
-
-      // Check ownership
-      if (product.seller.toString() !== req.user.id && req.user.role !== 'admin') {
-        return res.status(403).json({
-          success: false,
-          error: 'No autorizado para actualizar este producto'
-        });
-      }
-
-      // Process new images if uploaded
-      if (req.files && req.files.length > 0) {
-        const newImages = req.files.map((file, index) => ({
-          url: `/uploads/${file.filename}`,
-          alt: req.body.name || `Product image ${index + 1}`,
-          isPrimary: index === 0 && (!req.body.images || req.body.images.length === 0)
-        }));
-        
-        // Combine existing images with new ones or replace
-        if (req.body.keepExistingImages === 'true') {
-          req.body.images = [...(product.images || []), ...newImages];
-        } else {
-          req.body.images = newImages;
-        }
-      }
-
-      product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-      }).populate('seller', 'username profile');
-
-      res.json({
-        success: true,
-        data: product
-      });
-
-    } catch (error) {
-      console.error('Update product error:', error);
-      res.status(500).json({
+    if (!product) {
+      return res.status(404).json({
         success: false,
-        error: 'Error al actualizar el producto'
+        error: 'Producto no encontrado'
       });
     }
+
+    // Check ownership
+    if (product.seller.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'No autorizado para actualizar este producto'
+      });
+    }
+
+    product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    }).populate('seller', 'username profile');
+
+    res.json({
+      success: true,
+      data: product
+    });
+
+  } catch (error) {
+    console.error('Update product error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar el producto'
+    });
   }
-);
+};
 
 // @desc    Delete product
 // @route   DELETE /api/products/:id
 // @access  Private (Owner/Admin)
-router.delete('/:id', protect, validateObjectId, async (req, res) => {
+export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -296,12 +249,12 @@ router.delete('/:id', protect, validateObjectId, async (req, res) => {
       error: 'Error al eliminar el producto'
     });
   }
-});
+};
 
 // @desc    Get featured products
 // @route   GET /api/products/featured
 // @access  Public
-router.get('/featured/featured', async (req, res) => {
+export const getFeaturedProducts = async (req, res) => {
   try {
     const products = await Product.getFeatured(8);
     
@@ -318,12 +271,12 @@ router.get('/featured/featured', async (req, res) => {
       error: 'Error al obtener productos destacados'
     });
   }
-});
+};
 
 // @desc    Get products by seller
 // @route   GET /api/products/seller/:sellerId
 // @access  Public
-router.get('/seller/:sellerId', validateObjectId, async (req, res) => {
+export const getProductsBySeller = async (req, res) => {
   try {
     const products = await Product.find({
       seller: req.params.sellerId,
@@ -346,15 +299,14 @@ router.get('/seller/:sellerId', validateObjectId, async (req, res) => {
       error: 'Error al obtener productos del vendedor'
     });
   }
-});
+};
 
-// @desc    Toggle favorite
+// @desc    Add to favorites
 // @route   POST /api/products/:id/favorite
 // @access  Private
-router.post('/:id/favorite', protect, validateObjectId, async (req, res) => {
+export const addToFavorites = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    const user = await User.findById(req.user.id);
 
     if (!product) {
       return res.status(404).json({
@@ -363,35 +315,26 @@ router.post('/:id/favorite', protect, validateObjectId, async (req, res) => {
       });
     }
 
-    const isFavorite = user.favorites.includes(req.params.id);
-
-    if (isFavorite) {
-      // Remove from favorites
-      user.favorites.pull(req.params.id);
-      product.stats.favorites = Math.max(0, product.stats.favorites - 1);
-    } else {
-      // Add to favorites
-      user.favorites.push(req.params.id);
-      product.stats.favorites += 1;
-    }
-
-    await user.save();
+    // Increment favorites count
+    product.stats.favorites += 1;
     await product.save();
+
+    // Add to user favorites (you'll need to implement this in User model)
+    await User.findByIdAndUpdate(req.user.id, {
+      $addToSet: { favorites: product._id }
+    });
 
     res.json({
       success: true,
-      isFavorite: !isFavorite,
-      favoritesCount: product.stats.favorites,
-      message: isFavorite ? 'Removido de favoritos' : 'Agregado a favoritos'
+      message: 'Producto agregado a favoritos',
+      favoritesCount: product.stats.favorites
     });
 
   } catch (error) {
-    console.error('Toggle favorite error:', error);
+    console.error('Add to favorites error:', error);
     res.status(500).json({
       success: false,
-      error: 'Error actualizando favoritos'
+      error: 'Error al agregar a favoritos'
     });
   }
-});
-
-export default router;
+};

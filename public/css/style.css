@@ -1,0 +1,758 @@
+/* ================================
+   🎨 VARIABLES - PALETA CREMA ELEGANTE + URBANA
+   ================================ */
+:root {
+  --crema-principal: #F5F1E8;
+  --crema-oscuro: #E8DFCA;
+  --crema-suave: #FAF7F0;
+  --marron-elegante: #8B7355;
+  --marron-oscuro: #5D4037;
+  --dorado: #C8A97E;
+  --acento-urbano: #2A2A2A;
+  --texto-oscuro: #1A1A1A;
+  --texto-medio: #666666;
+  --texto-claro: #999999;
+  --borde-suave: #E0D6C5;
+  --sombra-suave: rgba(139, 115, 85, 0.1);
+  --sombra-media: rgba(139, 115, 85, 0.2);
+  --neon-dorado: #FFD700;
+}
+
+/* ================================
+   🔥 RESET Y BASE
+   ================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--crema-principal);
+  color: var(--texto-oscuro);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ================================
+   🏠 HEADER URBANO ELEGANTE
+   ================================ */
+.header {
+  background: linear-gradient(135deg, var(--crema-suave) 0%, var(--crema-oscuro) 100%);
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid var(--borde-suave);
+  box-shadow: 0 4px 20px var(--sombra-suave);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--acento-urbano);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.logo span {
+  color: var(--dorado);
+  font-weight: 300;
+}
+
+.logo::before {
+  content: "⚡";
+  font-size: 1.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.nav-links a {
+  color: var(--acento-urbano);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.nav-links a:hover {
+  color: var(--dorado);
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--dorado);
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* ================================
+   🌟 HERO SECTION URBANA
+   ================================ */
+.hero {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, var(--crema-suave) 0%, var(--crema-principal) 100%);
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%235D4037' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: var(--acento-urbano);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero h1 .brand {
+  background: linear-gradient(135deg, var(--marron-oscuro) 0%, var(--dorado) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-tagline {
+  font-size: 1.4rem;
+  color: var(--marron-elegante);
+  margin-bottom: 2rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.cta-button {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--acento-urbano) 0%, var(--marron-elegante) 100%);
+  color: var(--crema-suave);
+  padding: 1.2rem 3rem;
+  border-radius: 2px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px var(--sombra-media);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.cta-button:hover::before {
+  left: 100%;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px var(--sombra-media);
+}
+
+/* ================================
+   🛍️ PRODUCT GRID URBANO ELEGANTE
+   ================================ */
+.products-section {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--acento-urbano);
+  margin-bottom: 3rem;
+  letter-spacing: 3px;
+  position: relative;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--dorado), var(--marron-elegante));
+  margin: 1rem auto;
+  border-radius: 2px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.product-card {
+  background: var(--crema-suave);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--borde-suave);
+  box-shadow: 0 8px 25px var(--sombra-suave);
+  position: relative;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px var(--sombra-media);
+  border-color: var(--dorado);
+}
+
+.product-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--acento-urbano);
+  color: var(--crema-suave);
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  z-index: 2;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.badge-limited {
+  background: linear-gradient(135deg, var(--dorado) 0%, var(--marron-elegante) 100%);
+}
+
+.badge-new {
+  background: var(--marron-oscuro);
+}
+
+.badge-exclusive {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+}
+
+.product-image-container {
+  position: relative;
+  overflow: hidden;
+  height: 300px;
+  background: var(--crema-principal);
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-info {
+  padding: 1.8rem;
+}
+
+.product-category {
+  color: var(--dorado);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-family: 'Courier New', monospace;
+}
+
+.product-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--acento-urbano);
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.product-description {
+  color: var(--texto-medio);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+  font-weight: 300;
+}
+
+.product-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.product-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--marron-elegante);
+  font-family: 'Courier New', monospace;
+}
+
+.product-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.product-talla {
+  background: var(--crema-principal);
+  color: var(--marron-oscuro);
+  padding: 0.3rem 0.8rem;
+  border-radius: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid var(--borde-suave);
+}
+
+.product-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.stock-available {
+  background: rgba(139, 115, 85, 0.1);
+  color: var(--marron-elegante);
+  border: 1px solid var(--marron-elegante);
+}
+
+.stock-sold {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+  border: 1px solid #FF6B6B;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--acento-urbano) 0%, var(--marron-oscuro) 100%);
+  color: var(--crema-suave);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 2px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--sombra-media);
+}
+
+.btn-disabled {
+  background: var(--texto-claro);
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-disabled::before {
+  display: none;
+}
+
+/* ================================
+   👑 PRODUCTO DESTACADO
+   ================================ */
+.featured-product {
+  background: linear-gradient(135deg, var(--crema-suave) 0%, var(--crema-oscuro) 100%);
+  border: 2px solid var(--dorado);
+  transform: scale(1.02);
+}
+
+.featured-badge {
+  background: linear-gradient(135deg, var(--dorado) 0%, var(--marron-elegante) 100%);
+}
+
+/* ================================
+   📱 FOOTER URBANO ELEGANTE
+   ================================ */
+.footer {
+  background: linear-gradient(135deg, var(--acento-urbano) 0%, var(--marron-oscuro) 100%);
+  color: var(--crema-suave);
+  text-align: center;
+  padding: 3rem 2rem;
+  margin-top: 6rem;
+  border-top: 1px solid var(--borde-suave);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer p {
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.footer .brand {
+  color: var(--dorado);
+  font-weight: 700;
+}
+
+/* ================================
+   📱 RESPONSIVE DESIGN
+   ================================ */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .nav-links {
+    gap: 1.5rem;
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-tagline {
+    font-size: 1.1rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .product-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 1rem;
+  }
+  
+  .logo {
+    font-size: 1.3rem;
+  }
+  
+  .hero {
+    padding: 3rem 1rem;
+  }
+  
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  
+  .products-section {
+    padding: 2rem 1rem;
+  }
+  
+  .nav-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* ================================
+   ✨ UTILIDADES
+   ================================ */
+.no-products {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--texto-medio);
+}
+
+.no-products h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--marron-oscuro);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--texto-medio);
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.urban-border {
+  border: 1px solid var(--borde-suave);
+}
+
+.text-urban {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1.5px;
+}
+
+/* ================================
+   🎯 ESTILOS ESPECIALES PARA BADGES
+   ================================ */
+.estilo-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--dorado);
+  color: var(--acento-urbano);
+  padding: 0.3rem 0.8rem;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  z-index: 2;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+/* ================================
+   🎨 ESTILOS PARA PÁGINA DE PRODUCTO INDIVIDUAL
+   ================================ */
+.product-detail-section {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.product-detail-image {
+  background: var(--crema-suave);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--borde-suave);
+}
+
+.detail-image {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+}
+
+.product-detail-info {
+  padding: 2rem 0;
+}
+
+.detail-category {
+  color: var(--dorado);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: block;
+  font-family: 'Courier New', monospace;
+}
+
+.detail-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--acento-urbano);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.detail-description {
+  color: var(--texto-medio);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.detail-price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--marron-elegante);
+  margin-bottom: 2rem;
+  font-family: 'Courier New', monospace;
+}
+
+.detail-meta {
+  margin-bottom: 2.5rem;
+}
+
+.meta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.meta-label {
+  font-weight: 600;
+  color: var(--texto-oscuro);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.meta-value {
+  font-weight: 700;
+  color: var(--marron-elegante);
+  font-family: 'Courier New', monospace;
+}
+
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-large {
+  padding: 1.5rem 2rem;
+  font-size: 1.1rem;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--marron-elegante);
+  border: 2px solid var(--marron-elegante);
+  padding: 1rem 2rem;
+  border-radius: 2px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--marron-elegante);
+  color: var(--crema-suave);
+}
+
+.no-product {
+  text-align: center;
+  padding: 4rem 2rem;
+}

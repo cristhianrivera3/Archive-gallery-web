@@ -1,16 +1,18 @@
 [
   {
-    "nombre": "Chaqueta Negra",
-    "descripcion": "Chaqueta de cuero sintético, estilo urbano.",
-    "precio": 120000,
-    "categoria": "Chaquetas",
-    "imagen": "https://via.placeholder.com/300"
+    "id": 1,
+    "nombre": "Camisa Oversize Negra",
+    "descripcion": "Camisa 100% algodón con corte urbano.",
+    "precio": 89000,
+    "imagen": "/img/camisa1.jpg",
+    "stock": 5
   },
   {
-    "nombre": "Camisa Blanca",
-    "descripcion": "Camisa de algodón oversize.",
-    "precio": 80000,
-    "categoria": "Camisas",
-    "imagen": "https://via.placeholder.com/300"
+    "id": 2,
+    "nombre": "Chaqueta Techwear",
+    "descripcion": "Impermeable, con diseño futurista.",
+    "precio": 210000,
+    "imagen": "/img/chaqueta1.jpg",
+    "stock": 2
   }
 ]

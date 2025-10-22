@@ -1,30 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %> | StockGallery</title>
-    <link rel="stylesheet" href="/css/style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <header>
-      <h1 class="logo">STOCK<span>GALLERY</span></h1>
-      <nav>
-        <a href="/">Inicio</a>
-        <a href="/admin">Admin</a>
-      </nav>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="navbar">
+            <a href="/" class="logo">ČOMMØN PL4CE STOR3!</a>
+            <nav class="nav-links">
+                <a href="/">INICIO</a>
+                <a href="/#products">COLECCIÓN</a>
+                <a href="/admin">ADMIN</a>
+            </nav>
+        </div>
     </header>
 
+    <!-- Contenido Principal -->
     <main>
-      <%- body %>
+        <%- body %>
     </main>
 
-    <footer>
-      <p>© 2025 StockGallery. Todos los derechos reservados.</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>© 2024 <span class="brand">ČOMMØN PL4CE STOR3!</span> - TODOS LOS DERECHOS RESERVADOS</p>
+        </div>
     </footer>
-  </body>
+
+    <script src="/js/main.js"></script>
+</body>
 </html>
-
-

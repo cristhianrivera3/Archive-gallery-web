@@ -1,22 +1,66 @@
-<%- include('layout') %>
-
-<section class="productos">
-  <% if (productos.length === 0) { %>
-    <p>No hay productos disponibles en este momento.</p>
-  <% } else { %>
-    <div class="grid">
-      <% productos.forEach(producto => { %>
-        <div class="card">
-          <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>">
-          <h2><%= producto.nombre %></h2>
-          <p>Talla: <%= producto.talla %></p>
-          <p>Precio: $<%= producto.precio.toLocaleString() %> COP</p>
-          <p class="<%= producto.estado === 'Vendido' ? 'vendido' : 'disponible' %>">
-            <%= producto.estado %>
-          </p>
-          <a href="/producto/<%= producto.id %>" class="ver-detalle">Ver detalle</a>
-        </div>
-      <% }) %>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>
+            <span class="brand">ČOMMØN PL4CE STOR3!</span>
+        </h1>
+        <p class="hero-tagline">COLECCIÓN EXCLUSIVA - ESTILO URBANO - EDICIONES LIMITADAS</p>
+        <a href="#products" class="cta-button">EXPLORAR COLECCIÓN</a>
     </div>
-  <% } %>
+</section>
+
+<!-- Products Section -->
+<section class="products-section" id="products">
+    <h2 class="section-title">COLECCIÓN ACTUAL</h2>
+    
+    <% if (productos.length === 0) { %>
+        <div class="no-products">
+            <h3>COLECCIÓN EN PREPARACIÓN</h3>
+            <p>Próximamente nuevas piezas exclusivas</p>
+        </div>
+    <% } else { %>
+        <div class="products-grid">
+            <% productos.forEach(producto => { %>
+                <div class="product-card <%= producto.destacado ? 'featured-product' : '' %> fade-in">
+                    <% if (producto.destacado) { %>
+                        <div class="product-badge featured-badge">EXCLUSIVO</div>
+                    <% } %>
+                    
+                    <% if (producto.estilo) { %>
+                        <div class="estilo-badge"><%= producto.estilo %></div>
+                    <% } %>
+
+                    <div class="product-image-container">
+                        <img 
+                            src="<%= producto.imagen || '/img/placeholder.jpg' %>" 
+                            alt="<%= producto.nombre %>"
+                            class="product-image"
+                            onerror="this.src='/img/placeholder.jpg'"
+                        >
+                    </div>
+                    
+                    <div class="product-info">
+                        <span class="product-category"><%= producto.categoria %></span>
+                        <h3 class="product-title"><%= producto.nombre %></h3>
+                        <p class="product-description"><%= producto.descripcion %></p>
+                        
+                        <div class="product-details">
+                            <div class="product-price">$<%= producto.precio.toLocaleString() %></div>
+                            <div class="product-meta">
+                                <span class="product-talla"><%= producto.talla %></span>
+                                <span class="product-stock <%= producto.stock > 0 ? 'stock-available' : 'stock-sold' %>">
+                                    <%= producto.stock > 0 ? `STOCK: ${producto.stock}` : 'AGOTADO' %>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary <%= producto.stock === 0 ? 'btn-disabled' : '' %>"
+                                <%= producto.stock === 0 ? 'disabled' : '' %>>
+                            <%= producto.stock > 0 ? 'AGREGAR AL CARRITO' : 'NOTIFICARME' %>
+                        </button>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
 </section>
