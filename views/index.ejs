@@ -1,66 +1,46 @@
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero-content">
-        <h1>
-            <span class="brand">ČOMMØN PL4CE STOR3!</span>
-        </h1>
-        <p class="hero-tagline">COLECCIÓN EXCLUSIVA - ESTILO URBANO - EDICIONES LIMITADAS</p>
-        <a href="#products" class="cta-button">EXPLORAR COLECCIÓN</a>
-    </div>
+<!-- Hero Section con dos banners -->
+<section class="hero-section">
+    <a href="/stock" class="hero-banner stock-banner">
+        <div class="banner-image">
+            <img src="<%= banners && banners.stock ? banners.stock : '/img/stock-banner.jpg' %>" 
+                 alt="Stock Collection" 
+                 onerror="this.src='https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'">
+        </div>
+        <div class="banner-content">
+            <h2 class="banner-title">STOCK</h2>
+            <p class="banner-subtitle">prendas disponibles</p>
+            <span class="banner-cta">
+                ver colección de common place 
+                <span class="spinning-star">✧</span>
+                →
+            </span>
+        </div>
+    </a>
+    
+    <a href="/gallery" class="hero-banner gallery-banner">
+        <div class="banner-image">
+            <img src="<%= banners && banners.gallery ? banners.gallery : '/img/gallery-banner.jpg' %>" 
+                 alt="Art Gallery" 
+                 onerror="this.src='https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'">
+        </div>
+        <div class="banner-content">
+            <h2 class="banner-title">GALLERY</h2>
+            <p class="banner-subtitle">galeria de arte - common place <span class="static-star">⁂</span></p>
+            <span class="banner-cta">Ver Gallery! →</span>
+        </div>
+    </a>
 </section>
 
-<!-- Products Section -->
-<section class="products-section" id="products">
-    <h2 class="section-title">COLECCIÓN ACTUAL</h2>
-    
-    <% if (productos.length === 0) { %>
-        <div class="no-products">
-            <h3>COLECCIÓN EN PREPARACIÓN</h3>
-            <p>Próximamente nuevas piezas exclusivas</p>
+<!-- Info Section -->
+<section class="info-section">
+    <div class="container">
+        <div class="info-content">
+            <h2>
+                <span class="logo-text-info">ČOMMØN PL4CE</span>
+                <span class="spinning-star">✧</span>
+                <span class="static-star">⁂</span>
+            </h2>
+            <p>Ropa de segunda de calidad de forma seleccionada para que te perches con buenas prendas, dándole la mejor presentación y estilo al momento de enviar tus paquetes. Cada uno se envía de forma personalizada y especial para cada cliente.</p>
         </div>
-    <% } else { %>
-        <div class="products-grid">
-            <% productos.forEach(producto => { %>
-                <div class="product-card <%= producto.destacado ? 'featured-product' : '' %> fade-in">
-                    <% if (producto.destacado) { %>
-                        <div class="product-badge featured-badge">EXCLUSIVO</div>
-                    <% } %>
-                    
-                    <% if (producto.estilo) { %>
-                        <div class="estilo-badge"><%= producto.estilo %></div>
-                    <% } %>
-
-                    <div class="product-image-container">
-                        <img 
-                            src="<%= producto.imagen || '/img/placeholder.jpg' %>" 
-                            alt="<%= producto.nombre %>"
-                            class="product-image"
-                            onerror="this.src='/img/placeholder.jpg'"
-                        >
-                    </div>
-                    
-                    <div class="product-info">
-                        <span class="product-category"><%= producto.categoria %></span>
-                        <h3 class="product-title"><%= producto.nombre %></h3>
-                        <p class="product-description"><%= producto.descripcion %></p>
-                        
-                        <div class="product-details">
-                            <div class="product-price">$<%= producto.precio.toLocaleString() %></div>
-                            <div class="product-meta">
-                                <span class="product-talla"><%= producto.talla %></span>
-                                <span class="product-stock <%= producto.stock > 0 ? 'stock-available' : 'stock-sold' %>">
-                                    <%= producto.stock > 0 ? `STOCK: ${producto.stock}` : 'AGOTADO' %>
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <button class="btn-primary <%= producto.stock === 0 ? 'btn-disabled' : '' %>"
-                                <%= producto.stock === 0 ? 'disabled' : '' %>>
-                            <%= producto.stock > 0 ? 'AGREGAR AL CARRITO' : 'NOTIFICARME' %>
-                        </button>
-                    </div>
-                </div>
-            <% }) %>
-        </div>
-    <% } %>
+    </div>
 </section>

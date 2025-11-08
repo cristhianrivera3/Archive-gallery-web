@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 2rem;
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .success-title {
+            color: #10b981;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .success-message {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .order-details {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .btn-continue {
+            background: #8a2be2;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-continue:hover {
+            background: #7b1fa2;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <div class="success-container">
+        <div class="success-icon">🎉</div>
+        <h1 class="success-title">¡Pago Exitoso!</h1>
+        <p class="success-message">
+            Tu pedido ha sido procesado correctamente. Recibirás un email de confirmación shortly.
+        </p>
+        
+        <% if (payment_id) { %>
+            <div class="order-details">
+                <h3>Detalles de tu orden:</h3>
+                <p><strong>ID de transacción:</strong> <%= payment_id %></p>
+                <% if (external_reference) { %>
+                    <p><strong>Referencia:</strong> <%= external_reference %></p>
+                <% } %>
+                <p><strong>Estado:</strong> <span style="color: #10b981;">Completado</span></p>
+            </div>
+        <% } %>
+        
+        <a href="/stock" class="btn-continue">Seguir Comprando</a>
+    </div>
+    
+    <%- include('partials/footer') %>
+</body>
+</html>

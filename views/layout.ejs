@@ -7,19 +7,26 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header con logo centrado -->
     <header class="header">
-        <div class="navbar">
-            <a href="/" class="logo">ČOMMØN PL4CE STOR3!</a>
-            <nav class="nav-links">
-                <a href="/">INICIO</a>
-                <a href="/#products">COLECCIÓN</a>
-                <a href="/admin">ADMIN</a>
-            </nav>
-        </div>
+        <nav class="navbar">
+            <div class="nav-section">
+                <a href="/stock" class="nav-link">STOCK</a>
+            </div>
+            
+            <a href="/" class="logo">
+                <span class="logo-text">ČOMMØN PL4CE</span>
+                <span class="logo-spinning-star">✧</span>
+                <span class="logo-star">⁂</span>
+            </a>
+            
+            <div class="nav-section">
+                <a href="/gallery" class="nav-link">GALLERY</a>
+            </div>
+        </nav>
     </header>
 
     <!-- Contenido Principal -->
@@ -30,7 +37,22 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>© 2024 <span class="brand">ČOMMØN PL4CE STOR3!</span> - TODOS LOS DERECHOS RESERVADOS</p>
+            <div class="footer-section">
+                <h3>ČOMMØN PL4CE <span class="footer-star">✧</span><span class="footer-star">⁂</span></h3>
+                <p>Ropa de segunda de calidad seleccionada</p>
+            </div>
+            <div class="footer-section">
+                <h3>EXPLORAR</h3>
+                <ul class="footer-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/stock">Stock</a></li>
+                    <li><a href="/gallery">Gallery</a></li>
+                    <li><a href="/admin">Admin</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 <span>ČOMMØN PL4CE <span class="footer-star">✧</span><span class="footer-star">⁂</span></span> - Todos los derechos reservados</p>
         </div>
     </footer>
 

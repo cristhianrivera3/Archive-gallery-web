@@ -5,8 +5,8 @@
                 <!-- Imagen del Producto -->
                 <div class="product-detail-image">
                     <img 
-                        src="<%= producto.imagen || '/img/placeholder.jpg' %>" 
-                        alt="<%= producto.nombre %>"
+                        src="<%= producto.images && producto.images[0] ? producto.images[0].url : '/img/placeholder.jpg' %>" 
+                        alt="<%= producto.name %>"
                         class="detail-image"
                         onerror="this.src='/img/placeholder.jpg'"
                     >
@@ -14,20 +14,24 @@
                 
                 <!-- Información del Producto -->
                 <div class="product-detail-info">
-                    <span class="detail-category"><%= producto.categoria %></span>
-                    <h1 class="detail-title"><%= producto.nombre %></h1>
-                    <p class="detail-description"><%= producto.descripcion %></p>
+                    <span class="detail-category"><%= producto.category %></span>
+                    <h1 class="detail-title"><%= producto.name %></h1>
+                    <p class="detail-description"><%= producto.description %></p>
                     
-                    <div class="detail-price">$<%= producto.precio.toLocaleString() %></div>
+                    <div class="detail-price">$<%= producto.price.toLocaleString() %></div>
                     
                     <div class="detail-meta">
                         <div class="meta-item">
                             <span class="meta-label">TALLA:</span>
-                            <span class="meta-value"><%= producto.talla %></span>
+                            <span class="meta-value"><%= producto.size %></span>
                         </div>
                         <div class="meta-item">
-                            <span class="meta-label">ESTILO:</span>
-                            <span class="meta-value"><%= producto.estilo || 'Urbano' %></span>
+                            <span class="meta-label">MARCA:</span>
+                            <span class="meta-value"><%= producto.brand %></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">CONDICIÓN:</span>
+                            <span class="meta-value"><%= producto.condition %></span>
                         </div>
                         <div class="meta-item">
                             <span class="meta-label">DISPONIBILIDAD:</span>
@@ -38,11 +42,21 @@
                     </div>
                     
                     <div class="detail-actions">
-                        <button class="btn-primary btn-large <%= producto.stock === 0 ? 'btn-disabled' : '' %>"
+                        <!-- BOTÓN AGREGAR AL CARRITO -->
+                        <button onclick="agregarAlCarrito('<%= producto._id %>')" 
+                                class="btn-cart <%= producto.stock === 0 ? 'btn-disabled' : '' %>"
                                 <%= producto.stock === 0 ? 'disabled' : '' %>>
-                            <%= producto.stock > 0 ? 'COMPRAR AHORA' : 'PRODUCTO AGOTADO' %>
+                            <%= producto.stock > 0 ? '🛒 AGREGAR AL CARRITO' : 'PRODUCTO AGOTADO' %>
                         </button>
-                        <a href="/" class="btn-secondary">VOLVER A LA COLECCIÓN</a>
+                        
+                        <!-- BOTÓN COMPRAR AHORA -->
+                        <a href="/checkout" 
+                           class="btn-buy <%= producto.stock === 0 ? 'btn-disabled' : '' %>"
+                           <%= producto.stock === 0 ? 'onclick="return false;"' : '' %>>
+                            <%= producto.stock > 0 ? '💳 COMPRAR AHORA' : 'NO DISPONIBLE' %>
+                        </a>
+                        
+                        <a href="/stock" class="btn-back">← VOLVER A LA COLECCIÓN</a>
                     </div>
                 </div>
             </div>
@@ -50,11 +64,96 @@
             <div class="no-product">
                 <h2>PRODUCTO NO ENCONTRADO</h2>
                 <p>El producto que buscas no está disponible en este momento.</p>
-                <a href="/" class="cta-button">VER COLECCIÓN COMPLETA</a>
+                <a href="/stock" class="btn-back">VER COLECCIÓN COMPLETA</a>
             </div>
         <% } %>
     </div>
 </section>
+
+<!-- Script para el carrito -->
+<script>
+async function agregarAlCarrito(productoId) {
+    try {
+        // Mostrar loading
+        const boton = event.target;
+        const textoOriginal = boton.innerHTML;
+        boton.innerHTML = '🔄 AGREGANDO...';
+        boton.disabled = true;
+
+        const response = await fetch('/api/carrito/agregar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productoId: productoId, cantidad: 1 })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar notificación
+            mostrarNotificacion('✅ Producto agregado al carrito');
+            
+            // Actualizar contador del header
+            if (typeof actualizarContadorCarrito === 'function') {
+                actualizarContadorCarrito();
+            }
+            
+            // Restaurar botón
+            setTimeout(() => {
+                boton.innerHTML = textoOriginal;
+                boton.disabled = false;
+            }, 1500);
+            
+        } else {
+            mostrarNotificacion('❌ ' + data.error, 'error');
+            boton.innerHTML = textoOriginal;
+            boton.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('❌ Error de conexión', 'error');
+        boton.innerHTML = textoOriginal;
+        boton.disabled = false;
+    }
+}
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    const notificacion = document.createElement('div');
+    notificacion.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
+    notificacion.textContent = mensaje;
+    
+    document.body.appendChild(notificacion);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        notificacion.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-eliminar
+    setTimeout(() => {
+        notificacion.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notificacion.parentNode) {
+                notificacion.parentNode.removeChild(notificacion);
+            }
+        }, 300);
+    }, 3000);
+}
+</script>
 
 <style>
 .product-detail-section {
@@ -149,18 +248,63 @@
     font-family: 'Courier New', monospace;
 }
 
+.stock-available {
+    color: #10b981 !important;
+}
+
+.stock-sold {
+    color: #ef4444 !important;
+}
+
 .detail-actions {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.btn-large {
+.btn-cart {
+    background: #8a2be2;
+    color: white;
+    border: none;
     padding: 1.5rem 2rem;
+    border-radius: 8px;
     font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.btn-secondary {
+.btn-cart:hover:not(.btn-disabled) {
+    background: #7b1fa2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+}
+
+.btn-buy {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-buy:hover:not(.btn-disabled) {
+    background: #0da271;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-back {
     background: transparent;
     color: var(--marron-elegante);
     border: 2px solid var(--marron-elegante);
@@ -175,9 +319,16 @@
     transition: all 0.3s ease;
 }
 
-.btn-secondary:hover {
+.btn-back:hover {
     background: var(--marron-elegante);
     color: var(--crema-suave);
+}
+
+.btn-disabled {
+    background: #9ca3af !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .no-product {
@@ -204,6 +355,12 @@
     
     .detail-actions {
         flex-direction: column;
+    }
+    
+    .btn-cart,
+    .btn-buy {
+        padding: 1.25rem 1.5rem;
+        font-size: 1rem;
     }
 }
 </style>
