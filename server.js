@@ -1,14 +1,6 @@
-// Configuración para Railway
+// Configuración para Render.com
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Middleware para manejar imágenes en producción
-if (isProduction) {
-  console.log('🚀 Modo: PRODUCCIÓN (Railway)');
-  // Railway necesita esta configuración
-  app.set('trust proxy', 1);
-} else {
-  console.log('💻 Modo: DESARROLLO (Local)');
-}
 import express from 'express';
 import expressLayouts from 'express-ejs-layouts';
 import path from 'path';
@@ -26,6 +18,15 @@ import mercadopago from 'mercadopago';
 // Configuración de paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Middleware para manejar imágenes en producción
+if (isProduction) {
+  console.log('🚀 Modo: PRODUCCIÓN (Render.com)');
+  // Configuración para producción
+  app.set('trust proxy', 1);
+} else {
+  console.log('💻 Modo: DESARROLLO (Local)');
+}
 
 // Importar configuración y middleware
 import connectDB, { checkDBHealth } from './config/database.js';
@@ -164,36 +165,6 @@ const productosPrueba = [
     createdAt: new Date(),
     active: true,
     stats: { views: 0, favorites: 0, sales: 0 }
-  },
-  {
-    _id: '3',
-    name: 'Vintage Denim Jeans',
-    description: 'Classic vintage denim with unique wash.',
-    price: 120000,
-    images: [{ url: '/img/placeholder.jpg', alt: 'Vintage Denim' }],
-    stock: 3,
-    category: 'Pantalones',
-    size: '32',
-    condition: 'Like New',
-    brand: 'Vintage Co',
-    createdAt: new Date(),
-    active: true,
-    stats: { views: 0, favorites: 0, sales: 0 }
-  },
-  {
-    _id: '4',
-    name: 'Designer Blazer',
-    description: 'Elegant blazer for urban sophistication.',
-    price: 180000,
-    images: [{ url: '/img/placeholder.jpg', alt: 'Designer Blazer' }],
-    stock: 1,
-    category: 'Sacos',
-    size: 'M',
-    condition: 'New',
-    brand: 'Urban Elegance',
-    createdAt: new Date(),
-    active: true,
-    stats: { views: 0, favorites: 0, sales: 0 }
   }
 ];
 
@@ -203,15 +174,6 @@ const artworksPrueba = [
     title: 'Urban Dreams',
     artist: 'Alex Rivera',
     description: 'Mixed media exploring urban landscapes',
-    image: '/img/placeholder.jpg',
-    year: '2024',
-    category: 'Digital Art'
-  },
-  {
-    _id: '2',
-    title: 'Neon Nights',
-    artist: 'Maria Chen',
-    description: 'Digital painting of city nightlife',
     image: '/img/placeholder.jpg',
     year: '2024',
     category: 'Digital Art'
@@ -377,7 +339,7 @@ app.get('/producto/:id', async (req, res) => {
 });
 
 // ================================
-// 🛒 SISTEMA DE CARRITO CON COOKIES
+// 🛒 SISTEMA DE CARRITO CON COOKIES - CORREGIDO
 // ================================
 
 // Agregar producto al carrito
@@ -409,17 +371,33 @@ app.post('/api/carrito/agregar', async (req, res) => {
         productoId: productoId,
         cantidad: parseInt(cantidad),
         agregadoEn: new Date().toISOString(),
-        precio: producto.price // Guardar precio al momento de agregar
+        precio: producto.price
       });
     }
     
-    // Guardar en cookies por 7 días
-Ñ
-res.cookie('carrito', JSON.stringify(carrito), { 
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  httpOnly: true,
-  secure: isProduction, // ✅ Solo HTTPS en producción
-  sameSite: isProduction ? 'none' : 'lax' // ✅ Para Railwa
+    // Guardar en cookies por 7 días - CORREGIDO
+    res.cookie('carrito', JSON.stringify(carrito), { 
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax'
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Producto agregado al carrito',
+      carrito: carrito 
+    });
+    
+  } catch (error) {
+    console.error('Error al agregar al carrito:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error al agregar al carrito' 
+    });
+  }
+});
+
 // Obtener carrito con detalles completos
 app.get('/api/carrito', async (req, res) => {
   try {
@@ -457,7 +435,9 @@ app.get('/api/carrito', async (req, res) => {
         precio: item.precio
       }))), { 
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true 
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
       });
     }
     
@@ -480,7 +460,9 @@ app.delete('/api/carrito/:productoId', (req, res) => {
     
     res.cookie('carrito', JSON.stringify(carrito), { 
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true 
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax'
     });
     
     res.json({ 
@@ -511,7 +493,9 @@ app.put('/api/carrito/:productoId', async (req, res) => {
     
     res.cookie('carrito', JSON.stringify(carrito), { 
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true 
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax'
     });
     
     res.json({ 
@@ -646,7 +630,7 @@ app.get('/pago-exitoso', (req, res) => {
   // Limpiar carrito después de pago exitoso
   res.clearCookie('carrito');
   
-  res.render('pago-exitoso', { 
+  res.render('pagoExitoso', { 
     title: '¡Pago Exitoso! - ČOMMØN PL4CE',
     payment_id: req.query.payment_id,
     collection_id: req.query.collection_id
@@ -654,14 +638,14 @@ app.get('/pago-exitoso', (req, res) => {
 });
 
 app.get('/pago-fallido', (req, res) => {
-  res.render('pago-fallido', { 
+  res.render('pagoFallido', { 
     title: 'Pago Fallido - ČOMMØN PL4CE',
     error: req.query.error 
   });
 });
 
 app.get('/pago-pendiente', (req, res) => {
-  res.render('pago-pendiente', { 
+  res.render('pagoPendiente', { 
     title: 'Pago Pendiente - ČOMMØN PL4CE',
     payment_id: req.query.payment_id 
   });
@@ -923,7 +907,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ================================
-// 🧱 INICIO DEL SERVIDOR
+// 🧱 INICIO DEL SERVIDOR - CORREGIDO
 // ================================
 const PORT = process.env.PORT || 3000;
 
@@ -972,126 +956,3 @@ process.on('SIGINT', async () => {
 startServer();
 
 export default app;
-
-// ================================
-// 🎨 RUTAS DE ADMINISTRACIÓN MEJORADAS CON DEBUG
-// ================================
-
-// Ruta del panel de administración
-app.get('/admin', async (req, res) => {
-  try {
-    console.log('🔧 Accediendo al panel admin...');
-    const productos = await obtenerProductos();
-    
-    console.log('📦 Productos encontrados:', productos.length);
-    
-    res.render('admin', { 
-      title: 'ADMIN - ČOMMØN PL4CE ¡! ⁂✧',
-      productos: productos,
-      dbConnected: checkDBHealth(),
-      success: req.query.success,
-      error: req.query.error
-    });
-  } catch (error) {
-    console.error('❌ Error en admin:', error);
-    res.render('admin', { 
-      title: 'ADMIN - ČOMMØN PL4CE ¡! ⁂✧',
-      productos: productosPrueba,
-      dbConnected: false,
-      success: req.query.success,
-      error: req.query.error
-    });
-  }
-});
-
-// Ruta para agregar producto - MEJORADA CON DEBUG
-app.post('/admin/productos', upload.array('productImages', 5), async (req, res) => {
-  try {
-    console.log('🔄 Recibiendo datos del formulario...');
-    const { name, description, price, stock, category, size, condition, brand, color, material } = req.body;
-    
-    console.log('📦 Datos recibidos:', {
-      name, description, price, stock, category, size, condition, brand, color, material
-    });
-    console.log('🖼️ Archivos recibidos:', req.files ? req.files.length : 0);
-
-    // Validar datos requeridos
-    if (!name || !description || !price) {
-      console.log('❌ Validación fallida: campos requeridos faltantes');
-      return res.redirect('/admin?error=Nombre, descripción y precio son requeridos');
-    }
-
-    try {
-      const { default: Product } = await import('./models/Product.js');
-      const { default: User } = await import('./models/User.js');
-      
-      console.log('🔍 Buscando usuario vendedor...');
-      
-      // Usar un usuario temporal o crear uno por defecto
-      let seller = await User.findOne().sort({ createdAt: 1 });
-      if (!seller) {
-        console.log('👤 Creando usuario admin temporal...');
-        seller = await User.create({
-          username: 'admin',
-          email: 'admin@commonplace.com',
-          password: 'temp123',
-          role: 'admin'
-        });
-      }
-      
-      console.log('👤 Usuario vendedor:', seller._id);
-      
-      // Procesar imágenes subidas
-      const images = [];
-      if (req.files && req.files.length > 0) {
-        console.log('📸 Procesando imágenes subidas...');
-        req.files.forEach((file, index) => {
-          images.push({
-            url: '/uploads/' + file.filename,
-            alt: name,
-            isPrimary: index === 0
-          });
-        });
-      } else {
-        console.log('🖼️ Usando imagen por defecto...');
-        // Imagen por defecto si no se subieron
-        images.push({
-          url: '/img/placeholder.jpg',
-          alt: name,
-          isPrimary: true
-        });
-      }
-      
-      console.log('💾 Creando nuevo producto...');
-      const nuevoProducto = new Product({
-        name: name,
-        description: description,
-        price: parseFloat(price) || 0,
-        stock: parseInt(stock) || 1,
-        category: category || 'Camisetas',
-        size: size || 'M',
-        condition: condition || 'New',
-        brand: brand || 'Common Place',
-        color: color || 'Negro',
-        material: material || '',
-        images: images,
-        seller: seller._id,
-        active: true
-      });
-      
-      await nuevoProducto.save();
-      console.log('✅ Producto guardado en MongoDB:', nuevoProducto.name);
-      
-      res.redirect('/admin?success=Producto agregado correctamente');
-      
-    } catch (dbError) {
-      console.error('❌ Error de MongoDB:', dbError);
-      console.log('📝 MongoDB no disponible - producto no persistido');
-      res.redirect('/admin?success=Producto agregado (modo demo - no persistido)');
-    }
-    
-  } catch (error) {
-    console.error('❌ Error al agregar producto:', error);
-    res.redirect('/admin?error=Error al agregar el producto: ' + error.message);
-  }
-});
