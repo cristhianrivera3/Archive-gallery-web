@@ -1,0 +1,38 @@
+<!-- Gallery Hero -->
+<section class="page-hero gallery-hero">
+    <div class="container">
+        <h1 class="page-title">COMMON PLACE GALLERY ART</h1>
+        <p class="page-subtitle">Curated art collection</p>
+    </div>
+</section>
+
+<!-- Gallery Grid -->
+<section class="gallery-section">
+    <div class="container">
+        <div class="gallery-grid">
+            <% if (artworks && artworks.length > 0) { %>
+                <% artworks.forEach(artwork => { %>
+                    <div class="artwork-card">
+                        <div class="artwork-image">
+                            <img src="<%= artwork.image %>" 
+                                 alt="<%= artwork.title %>"
+                                 onerror="this.src='/img/placeholder.jpg'">
+                        </div>
+                        <div class="artwork-info">
+                            <h3 class="artwork-title"><%= artwork.title %></h3>
+                            <p class="artwork-artist"><%= artwork.artist %></p>
+                            <p class="artwork-description"><%= artwork.description %></p>
+                            <p class="artwork-year"><%= artwork.year %></p>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="no-artworks">
+                    <h3>GALLERY EMPTY</h3>
+                    <p>No artworks available yet</p>
+                    <a href="/admin/gallery" class="btn btn-primary">ADD ARTWORKS</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>

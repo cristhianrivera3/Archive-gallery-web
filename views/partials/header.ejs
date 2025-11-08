@@ -1,0 +1,60 @@
+<header style="background: #1a1a1a; color: white; padding: 1rem 0; border-bottom: 3px solid #8a2be2;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <!-- Logo -->
+        <div style="flex: 1;">
+            <a href="/" style="color: white; text-decoration: none; font-size: 1.8rem; font-weight: bold; font-family: 'Courier New', monospace;">
+                ČOMMØN PL4CE ¡! ⁂✧
+            </a>
+        </div>
+        
+        <!-- Navegación -->
+        <nav style="flex: 2; display: flex; justify-content: center; gap: 2rem;">
+            <a href="/" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; font-family: 'Courier New', monospace;">
+                🏠 HOME
+            </a>
+            <a href="/stock" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; font-family: 'Courier New', monospace;">
+                🛍️ STOCK
+            </a>
+            <a href="/gallery" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; font-family: 'Courier New', monospace;">
+                🎨 GALLERY
+            </a>
+            <a href="/admin" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; font-family: 'Courier New', monospace; background: #8a2be2;">
+                👨‍💼 ADMIN
+            </a>
+        </nav>
+        
+        <!-- Carrito -->
+        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
+            <a href="/checkout" id="carrito-icon" style="color: white; text-decoration: none; position: relative; padding: 0.5rem; border-radius: 50%; transition: background 0.3s;">
+                🛒
+                <span id="carrito-contador" style="position: absolute; top: -5px; right: -5px; background: #8a2be2; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; display: none;">
+                    0
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar contador del carrito
+        async function actualizarContadorCarrito() {
+            try {
+                const response = await fetch('/api/carrito');
+                const data = await response.json();
+                
+                const contador = document.getElementById('carrito-contador');
+                if (data.success && data.carrito.length > 0) {
+                    const totalItems = data.carrito.reduce((sum, item) => sum + item.cantidad, 0);
+                    contador.textContent = totalItems;
+                    contador.style.display = 'flex';
+                } else {
+                    contador.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error actualizando contador:', error);
+            }
+        }
+
+        // Actualizar al cargar la página
+        document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
+    </script>
+</header>

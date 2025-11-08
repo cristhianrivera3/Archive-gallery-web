@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        .pending-container {
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 2rem;
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .pending-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .pending-title {
+            color: #f59e0b;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .pending-message {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .btn-back {
+            background: #8a2be2;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: #7b1fa2;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <div class="pending-container">
+        <div class="pending-icon">⏳</div>
+        <h1 class="pending-title">Pago Pendiente</h1>
+        <p class="pending-message">
+            <%= message %>
+        </p>
+        
+        <% if (payment_id) { %>
+            <div style="background: #fffbeb; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                <strong>ID de transacción:</strong> <%= payment_id %>
+            </div>
+        <% } %>
+        
+        <a href="/stock" class="btn-back">Volver a la Tienda</a>
+    </div>
+    
+    <%- include('partials/footer') %>
+</body>
+</html>

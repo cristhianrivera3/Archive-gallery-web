@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Arial', sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+        
+        .checkout-container { 
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 0 1rem; 
+            display: grid; 
+            grid-template-columns: 1fr 400px; 
+            gap: 2rem; 
+        }
+        
+        .form-section, .resumen-section { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1); 
+        }
+        
+        h1 { 
+            margin-bottom: 2rem; 
+            color: #8a2be2; 
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        
+        h3 { 
+            margin: 1.5rem 0 1rem; 
+            color: #555; 
+            border-bottom: 2px solid #8a2be2; 
+            padding-bottom: 0.5rem; 
+            font-size: 1.3rem;
+        }
+        
+        .form-group { 
+            margin-bottom: 1.5rem; 
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: bold; 
+            color: #555; 
+            font-size: 0.95rem;
+        }
+        
+        input, textarea, select { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            transition: all 0.3s ease; 
+        }
+        
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #8a2be2; 
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+        }
+        
+        .resumen-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 1rem 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        
+        .resumen-item img { 
+            width: 70px; 
+            height: 70px; 
+            object-fit: cover; 
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        
+        .item-info { 
+            flex: 1; 
+            margin-left: 1rem; 
+        }
+        
+        .item-name { 
+            font-weight: bold; 
+            margin-bottom: 0.25rem; 
+            color: #333;
+        }
+        
+        .item-details { 
+            color: #666; 
+            font-size: 0.85rem; 
+        }
+        
+        .item-price { 
+            font-weight: bold; 
+            color: #8a2be2; 
+            font-size: 1.1rem;
+        }
+        
+        .total { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            border-top: 2px solid #ccc; 
+            padding-top: 1rem; 
+            margin-top: 1rem; 
+            text-align: right; 
+            color: #333;
+        }
+        
+        .btn-pagar { 
+            background: linear-gradient(135deg, #8a2be2, #9b59b6);
+            color: white; 
+            padding: 1.2rem 2rem; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            width: 100%; 
+            margin-top: 1.5rem; 
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-pagar:hover { 
+            background: linear-gradient(135deg, #7b1fa2, #8e44ad);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+        }
+        
+        .btn-pagar:disabled { 
+            background: #ccc; 
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .carrito-vacio { 
+            text-align: center; 
+            padding: 3rem; 
+            color: #666; 
+        }
+        
+        .error { 
+            color: #e74c3c; 
+            font-size: 0.85rem; 
+            margin-top: 0.25rem; 
+            display: block;
+        }
+        
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        
+        .payment-methods {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .payment-methods p {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .payment-icons {
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .step.active .step-number {
+            background: #8a2be2;
+            color: white;
+        }
+        
+        .step-text {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .step.active .step-text {
+            color: #8a2be2;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-section, .resumen-section {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <div class="step-indicator">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-text">Carrito</div>
+        </div>
+        <div class="step active">
+            <div class="step-number">2</div>
+            <div class="step-text">Envío</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">Pago</div>
+        </div>
+    </div>
+    
+    <div class="checkout-container">
+        <div class="form-section">
+            <h1>Finalizar Compra</h1>
+            
+            <form id="form-datos-envio">
+                <h3>📦 Datos de Envío</h3>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre completo *</label>
+                    <input type="text" id="nombre" name="nombre" required placeholder="Ej: María González">
+                    <span class="error" id="error-nombre"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apellido">Apellido *</label>
+                    <input type="text" id="apellido" name="apellido" required placeholder="Ej: Pérez">
+                    <span class="error" id="error-apellido"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                    <span class="error" id="error-email"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono *</label>
+                    <input type="tel" id="telefono" name="telefono" required placeholder="+57 300 123 4567">
+                    <span class="error" id="error-telefono"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="direccion">Dirección completa *</label>
+                    <textarea id="direccion" name="direccion" rows="3" required placeholder="Calle, número, barrio, ciudad"></textarea>
+                    <span class="error" id="error-direccion"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ciudad">Ciudad *</label>
+                    <input type="text" id="ciudad" name="ciudad" required placeholder="Ej: Bogotá">
+                    <span class="error" id="error-ciudad"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="codigoPostal">Código Postal</label>
+                    <input type="text" id="codigoPostal" name="codigoPostal" placeholder="110111">
+                </div>
+            </form>
+        </div>
+        
+        <div class="resumen-section">
+            <h3>🛒 Resumen de Compra</h3>
+            <div id="resumen-carrito">
+                <div class="carrito-vacio">
+                    <p>😔 Tu carrito está vacío</p>
+                    <a href="/stock" style="color: #8a2be2; text-decoration: none; margin-top: 1rem; display: inline-block;">
+                        ← Volver a la tienda
+                    </a>
+                </div>
+            </div>
+            
+            <button type="button" id="btn-pagar" class="btn-pagar" disabled>
+                Proceder al Pago
+            </button>
+            
+            <div class="payment-methods">
+                <p>💜 Métodos de pago aceptados</p>
+                <div class="payment-icons">
+                    💳 🏦 📱 💰
+                </div>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #666;">
+                    Nequi, Tarjetas, PSE, Efecty y más
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carritoActual = [];
+        let totalCompra = 0;
+
+        // Cargar carrito al iniciar
+        document.addEventListener('DOMContentLoaded', cargarCarrito);
+
+        async function cargarCarrito() {
+            try {
+                showLoading(true);
+                const response = await fetch('/api/carrito');
+                const data = await response.json();
+                
+                if (data.success && data.carrito.length > 0) {
+                    carritoActual = data.carrito;
+                    mostrarResumenCarrito();
+                    document.getElementById('btn-pagar').disabled = false;
+                } else {
+                    mostrarCarritoVacio();
+                }
+            } catch (error) {
+                console.error('Error cargando carrito:', error);
+                mostrarCarritoVacio();
+                showError('Error al cargar el carrito');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function mostrarCarritoVacio() {
+            document.getElementById('resumen-carrito').innerHTML = `
+                <div class="carrito-vacio">
+                    <p>😔 Tu carrito está vacío</p>
+                    <a href="/stock" style="color: #8a2be2; text-decoration: none; margin-top: 1rem; display: inline-block;">
+                        ← Volver a la tienda
+                    </a>
+                </div>
+            `;
+        }
+
+        function mostrarResumenCarrito() {
+            let html = '';
+            totalCompra = 0;
+
+            carritoActual.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                totalCompra += subtotal;
+                const imageUrl = item.producto.images[0]?.url || '/img/placeholder.jpg';
+                
+                html += `
+                    <div class="resumen-item">
+                        <img src="${imageUrl}" 
+                             alt="${item.producto.name}" 
+                             onerror="this.src='/img/placeholder.jpg'">
+                        <div class="item-info">
+                            <div class="item-name">${item.producto.name}</div>
+                            <div class="item-details">
+                                ${item.producto.brand} • Talla: ${item.producto.size} • ${item.cantidad} und
+                            </div>
+                            <div class="item-details" style="color: #8a2be2; font-weight: bold;">
+                                $${item.precio.toLocaleString()} c/u
+                            </div>
+                        </div>
+                        <div class="item-price">$${subtotal.toLocaleString()}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="total">
+                    Total: $${totalCompra.toLocaleString()}
+                </div>
+            `;
+
+            document.getElementById('resumen-carrito').innerHTML = html;
+        }
+
+        // Validar formulario
+        function validarFormulario() {
+            const form = document.getElementById('form-datos-envio');
+            const inputs = form.querySelectorAll('input[required], textarea[required]');
+            let valido = true;
+
+            // Limpiar errores
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    document.getElementById(`error-${input.name}`).textContent = 'Este campo es requerido';
+                    valido = false;
+                }
+            });
+
+            // Validar email
+            const email = document.getElementById('email');
+            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                document.getElementById('error-email').textContent = 'Email inválido';
+                valido = false;
+            }
+
+            // Validar teléfono (mínimo 10 caracteres)
+            const telefono = document.getElementById('telefono');
+            if (telefono.value && telefono.value.replace(/\D/g, '').length < 10) {
+                document.getElementById('error-telefono').textContent = 'Teléfono inválido';
+                valido = false;
+            }
+
+            return valido;
+        }
+
+        // Procesar pago
+        document.getElementById('btn-pagar').addEventListener('click', async () => {
+            if (!validarFormulario()) {
+                showError('Por favor completa todos los campos requeridos correctamente');
+                return;
+            }
+
+            if (carritoActual.length === 0) {
+                showError('El carrito está vacío');
+                return;
+            }
+
+            const btnPagar = document.getElementById('btn-pagar');
+            btnPagar.disabled = true;
+            btnPagar.textContent = '🔄 Procesando...';
+            showLoading(true);
+
+            try {
+                const formData = new FormData(document.getElementById('form-datos-envio'));
+                const datosEnvio = Object.fromEntries(formData);
+
+                const response = await fetch('/api/crear-pago', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: carritoActual,
+                        comprador: datosEnvio
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Redirigiendo a Mercado Pago...');
+                    // Redirigir a Mercado Pago
+                    setTimeout(() => {
+                        window.location.href = data.init_point;
+                    }, 1000);
+                } else {
+                    throw new Error(data.error || 'Error al procesar el pago');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al procesar el pago: ' + error.message);
+                btnPagar.disabled = false;
+                btnPagar.textContent = 'Proceder al Pago';
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Helper functions
+        function showLoading(show) {
+            if (show) {
+                document.body.classList.add('loading');
+            } else {
+                document.body.classList.remove('loading');
+            }
+        }
+
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        // Validar en tiempo real
+        document.querySelectorAll('#form-datos-envio input, #form-datos-envio textarea').forEach(input => {
+            input.addEventListener('blur', validarFormulario);
+            input.addEventListener('input', () => {
+                document.getElementById(`error-${input.name}`).textContent = '';
+            });
+        });
+    </script>
+    
+    <%- include('partials/footer') %>
+</body>
+</html>

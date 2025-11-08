@@ -1,0 +1,249 @@
+<!-- Stock Hero -->
+<section class="page-hero">
+    <div class="container">
+        <h1 class="page-title">STOCK COLLECTION</h1>
+        <p class="page-subtitle">Prendas disponibles listas para enviar</p>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">explorar categorias</h2>
+        <div class="categories-grid">
+            <div class="category-card" data-category="pantalones">
+                <div class="category-icon">👖</div>
+                <h3>PANTALONES</h3>
+                <p>Variedad de estilos</p>
+            </div>
+            <div class="category-card" data-category="camisetas">
+                <div class="category-icon">👕</div>
+                <h3>CAMISETAS</h3>
+                <p>Diseños únicos</p>
+            </div>
+            <div class="category-card" data-category="sacos">
+                <div class="category-icon">🧥</div>
+                <h3>SACOS</h3>
+                <p>Elegancia urbana</p>
+            </div>
+            <div class="category-card" data-category="todo">
+                <div class="category-icon">🌟</div>
+                <h3>TODO</h3>
+                <p>Ver todos los productos</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="products-section">
+    <div class="container">
+        <h2 class="section-title">PRENDAS DISPONIBLES</h2>
+        
+        <div class="products-grid">
+            <% if (productos && productos.length > 0) { %>
+                <% productos.forEach(producto => { %>
+                    <div class="product-card">
+                        <% if (producto.destacado) { %>
+                            <div class="product-badge">EXCLUSIVO</div>
+                        <% } %>
+                        
+                        <div class="product-image">
+                            <img src="<%= producto.images && producto.images[0] ? producto.images[0].url : '/img/placeholder.jpg' %>" 
+                                 alt="<%= producto.name %>"
+                                 onerror="this.src='/img/placeholder.jpg'">
+                        </div>
+                        
+                        <div class="product-info">
+                            <span class="product-category"><%= producto.category %></span>
+                            <h3 class="product-title"><%= producto.name %></h3>
+                            <p class="product-description"><%= producto.description %></p>
+                            
+                            <div class="product-details">
+                                <div class="product-price">$<%= producto.price ? producto.price.toLocaleString() : '0' %></div>
+                                <div class="product-meta">
+                                    <span class="product-size"><%= producto.size %></span>
+                                    <span class="product-stock <%= producto.stock > 0 ? 'in-stock' : 'out-of-stock' %>">
+                                        <%= producto.stock > 0 ? `STOCK: ${producto.stock}` : 'AGOTADO' %>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="product-actions">
+                                <a href="/producto/<%= producto._id %>" class="btn btn-outline">VER DETALLES</a>
+                                
+                                <!-- BOTÓN AGREGAR AL CARRITO -->
+                                <button onclick="agregarAlCarrito('<%= producto._id %>')" 
+                                        class="btn btn-primary <%= producto.stock === 0 ? 'disabled' : '' %>"
+                                        <%= producto.stock === 0 ? 'disabled' : '' %>>
+                                    <%= producto.stock > 0 ? '🛒 AGREGAR' : 'AGOTADO' %>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="no-products">
+                    <h3>NO HAY PRODUCTOS DISPONIBLES</h3>
+                    <p>Nuevas piezas próximamente</p>
+                    <a href="/admin" class="btn btn-primary">AGREGAR PRODUCTOS</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<!-- Script para el carrito -->
+<script>
+async function agregarAlCarrito(productoId) {
+    try {
+        // Mostrar loading
+        const boton = event.target;
+        const textoOriginal = boton.innerHTML;
+        boton.innerHTML = '🔄...';
+        boton.disabled = true;
+
+        const response = await fetch('/api/carrito/agregar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productoId: productoId, cantidad: 1 })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar notificación bonita
+            mostrarNotificacion('✅ Producto agregado al carrito');
+            
+            // Actualizar contador del header
+            if (typeof actualizarContadorCarrito === 'function') {
+                actualizarContadorCarrito();
+            }
+            
+            // Restaurar botón después de un momento
+            setTimeout(() => {
+                boton.innerHTML = textoOriginal;
+                boton.disabled = false;
+            }, 1000);
+            
+        } else {
+            mostrarNotificacion('❌ ' + data.error, 'error');
+            boton.innerHTML = textoOriginal;
+            boton.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('❌ Error de conexión', 'error');
+        boton.innerHTML = textoOriginal;
+        boton.disabled = false;
+    }
+}
+
+// Función para mostrar notificaciones bonitas
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    // Crear elemento de notificación
+    const notificacion = document.createElement('div');
+    notificacion.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
+    notificacion.textContent = mensaje;
+    
+    document.body.appendChild(notificacion);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        notificacion.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-eliminar después de 3 segundos
+    setTimeout(() => {
+        notificacion.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notificacion.parentNode) {
+                notificacion.parentNode.removeChild(notificacion);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Navegación por categorías
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryCards = document.querySelectorAll('.category-card');
+    
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const categoria = this.getAttribute('data-category');
+            window.location.href = `/stock?categoria=${categoria}`;
+        });
+    });
+});
+</script>
+
+<style>
+/* Estilos para las notificaciones */
+.product-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.btn-primary {
+    background: #8a2be2;
+    color: white;
+}
+
+.btn-primary:hover:not(.disabled) {
+    background: #7b1fa2;
+    transform: translateY(-2px);
+}
+
+.btn-primary.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #8a2be2;
+    border: 2px solid #8a2be2;
+}
+
+.btn-outline:hover {
+    background: #8a2be2;
+    color: white;
+}
+
+.category-card {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+}
+</style>
