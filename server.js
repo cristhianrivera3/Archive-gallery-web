@@ -19,32 +19,39 @@ import mercadopago from 'mercadopago';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware para manejar imágenes en producción
+// Cargar variables de entorno
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
+
+const app = express();
+
+// Middleware para producción
 if (isProduction) {
   console.log('🚀 Modo: PRODUCCIÓN (Render.com)');
-  // Configuración para producción
   app.set('trust proxy', 1);
 } else {
   console.log('💻 Modo: DESARROLLO (Local)');
 }
 
-// Importar configuración y middleware
-import connectDB, { checkDBHealth } from './config/database.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
-
-// Importar rutas
-import productRoutes from './routes/productRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js';
-
-const app = express();
-dotenv.config();
-
 // ================================
 // 🔗 CONEXIÓN A MONGODB
 // ================================
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/common-place');
+    console.log(`✅ MongoDB Conectado: ${conn.connection.host}`);
+    console.log(`📊 Base de datos: ${conn.connection.name}`);
+  } catch (error) {
+    console.log('❌ Error conectando MongoDB:', error.message);
+    console.log('📝 Usando modo demo sin base de datos');
+  }
+};
+
+const checkDBHealth = () => {
+  return mongoose.connection.readyState === 1;
+};
+
 connectDB();
 
 // ================================
@@ -165,6 +172,36 @@ const productosPrueba = [
     createdAt: new Date(),
     active: true,
     stats: { views: 0, favorites: 0, sales: 0 }
+  },
+  {
+    _id: '3',
+    name: 'Vintage Denim Jeans',
+    description: 'Classic vintage denim with unique wash.',
+    price: 120000,
+    images: [{ url: '/img/placeholder.jpg', alt: 'Vintage Denim' }],
+    stock: 3,
+    category: 'Pantalones',
+    size: '32',
+    condition: 'Like New',
+    brand: 'Vintage Co',
+    createdAt: new Date(),
+    active: true,
+    stats: { views: 0, favorites: 0, sales: 0 }
+  },
+  {
+    _id: '4',
+    name: 'Designer Blazer',
+    description: 'Elegant blazer for urban sophistication.',
+    price: 180000,
+    images: [{ url: '/img/placeholder.jpg', alt: 'Designer Blazer' }],
+    stock: 1,
+    category: 'Sacos',
+    size: 'M',
+    condition: 'New',
+    brand: 'Urban Elegance',
+    createdAt: new Date(),
+    active: true,
+    stats: { views: 0, favorites: 0, sales: 0 }
   }
 ];
 
@@ -174,6 +211,15 @@ const artworksPrueba = [
     title: 'Urban Dreams',
     artist: 'Alex Rivera',
     description: 'Mixed media exploring urban landscapes',
+    image: '/img/placeholder.jpg',
+    year: '2024',
+    category: 'Digital Art'
+  },
+  {
+    _id: '2',
+    title: 'Neon Nights',
+    artist: 'Maria Chen',
+    description: 'Digital painting of city nightlife',
     image: '/img/placeholder.jpg',
     year: '2024',
     category: 'Digital Art'
@@ -187,7 +233,6 @@ async function obtenerProductos() {
   try {
     const { default: Product } = await import('./models/Product.js');
     const productos = await Product.find({ active: true, stock: { $gt: 0 } })
-      .populate('seller', 'username profile.avatar')
       .sort({ createdAt: -1 })
       .limit(12);
     return productos;
@@ -207,7 +252,6 @@ async function obtenerProductosPorCategoria(categoria) {
     }
     
     const productos = await Product.find(query)
-      .populate('seller', 'username profile.avatar')
       .sort({ createdAt: -1 });
     return productos;
   } catch (error) {
@@ -224,8 +268,7 @@ async function obtenerProductosPorCategoria(categoria) {
 async function obtenerProductoPorId(id) {
   try {
     const { default: Product } = await import('./models/Product.js');
-    const producto = await Product.findById(id)
-      .populate('seller', 'username profile.avatar sellerProfile');
+    const producto = await Product.findById(id);
     return producto;
   } catch (error) {
     console.log('📝 Buscando en datos de prueba temporales');
@@ -375,7 +418,7 @@ app.post('/api/carrito/agregar', async (req, res) => {
       });
     }
     
-    // Guardar en cookies por 7 días - CORREGIDO
+    // Guardar en cookies por 7 días
     res.cookie('carrito', JSON.stringify(carrito), { 
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -727,17 +770,6 @@ app.post('/admin/productos', upload.array('productImages', 5), async (req, res) 
 
     try {
       const { default: Product } = await import('./models/Product.js');
-      const { default: User } = await import('./models/User.js');
-      
-      let seller = await User.findOne().sort({ createdAt: 1 });
-      if (!seller) {
-        seller = await User.create({
-          username: 'admin',
-          email: 'admin@commonplace.com',
-          password: 'temp123',
-          role: 'admin'
-        });
-      }
       
       const images = [];
       if (req.files && req.files.length > 0) {
@@ -766,7 +798,6 @@ app.post('/admin/productos', upload.array('productImages', 5), async (req, res) 
         condition: condition || 'New',
         brand: brand || 'Common Place',
         images: images,
-        seller: seller._id,
         active: true
       });
       
@@ -838,15 +869,8 @@ app.get('/admin/gallery', async (req, res) => {
 });
 
 // ================================
-// 📡 RUTAS API (REST)
+// 📡 RUTAS DEL SISTEMA
 // ================================
-
-// Usar rutas API
-app.use('/api/products', productRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/reviews', reviewRoutes);
 
 // Ruta de salud/estado
 app.get('/health', (req, res) => {
@@ -855,7 +879,7 @@ app.get('/health', (req, res) => {
     message: 'ČOMMØN PL4CE ¡! ⁂✧ funcionando',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    mongodb: checkDBHealth() ? 'connected' : 'disconnected',
     uptime: Math.floor(process.uptime()),
     memory: {
       used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
@@ -881,8 +905,6 @@ app.get('/api/info', (req, res) => {
       gallery: '/gallery',
       admin: '/admin',
       checkout: '/checkout',
-      products: '/api/products',
-      auth: '/api/auth',
       carrito: '/api/carrito',
       pagos: '/api/crear-pago',
       health: '/health'
@@ -892,67 +914,50 @@ app.get('/api/info', (req, res) => {
 });
 
 // ================================
-// 🛡️ MANEJO DE ERRORES
+// ❌ MANEJO DE ERRORES
 // ================================
 
 // 404 handler para vistas
 app.use((req, res) => {
   res.status(404).render('error', {
-    title: 'Página No Encontrado',
+    title: 'Página No Encontrada',
     message: 'La página que buscas no existe.'
   });
 });
 
-// Error handler global
-app.use(errorHandler);
-
 // ================================
-// 🧱 INICIO DEL SERVIDOR - CORREGIDO
+// 🚀 INICIAR SERVIDOR
 // ================================
 const PORT = process.env.PORT || 3000;
 
-// Función de inicio
-const startServer = () => {
-  app.listen(PORT, () => {
-    console.log('='.repeat(70));
-    console.log('🚀 ČOMMØN PL4CE ¡! ⁂✧ - Servidor Iniciado');
-    console.log('='.repeat(70));
-    console.log(`📍 URL: http://localhost:${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📊 MongoDB: ${mongoose.connection.readyState === 1 ? '✅ Conectado' : '❌ Desconectado'}`);
-    console.log(`🛡️ Security: Helmet, Compression, Rate Limiting activados`);
-    console.log(`🛒 Carrito: Cookies activadas`);
-    console.log(`💳 Pagos: Mercado Pago integrado (Nequi disponible)`);
-    console.log('');
-    console.log('📡 Endpoints disponibles:');
-    console.log(`   🏠 Home:      http://localhost:${PORT}`);
-    console.log(`   🛍️ Stock:     http://localhost:${PORT}/stock`);
-    console.log(`   🎨 Gallery:   http://localhost:${PORT}/gallery`);
-    console.log(`   👨‍💼 Admin:     http://localhost:${PORT}/admin`);
-    console.log(`   💳 Checkout:  http://localhost:${PORT}/checkout`);
-    console.log(`   ❤️ Health:     http://localhost:${PORT}/health`);
-    console.log('');
-    console.log('🎯 Características:');
-    console.log(`   ✅ Sistema de carrito con cookies`);
-    console.log(`   ✅ Integración Mercado Pago (Nequi, tarjetas, PSE)`);
-    console.log(`   ✅ Checkout completo`);
-    console.log(`   ✅ Panel admin para productos`);
-    console.log(`   ✅ Gestión de banners`);
-    console.log('');
-    console.log('⚡ Usa Ctrl+C para detener el servidor');
-    console.log('='.repeat(70));
-  });
-};
-
-// Manejo de graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Recibida señal de terminación...');
-  await mongoose.connection.close();
-  console.log('✅ Conexiones cerradas - Servidor terminado');
-  process.exit(0);
+app.listen(PORT, () => {
+  console.log('='.repeat(70));
+  console.log('🚀 ČOMMØN PL4CE ¡! ⁂✧ - Servidor Iniciado');
+  console.log('='.repeat(70));
+  console.log(`📍 URL: http://localhost:${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📊 MongoDB: ${checkDBHealth() ? '✅ Conectado' : '❌ Desconectado'}`);
+  console.log(`🛡️ Security: Helmet, Compression, Rate Limiting activados`);
+  console.log(`🛒 Carrito: Cookies activadas`);
+  console.log(`💳 Pagos: Mercado Pago integrado (Nequi disponible)`);
+  console.log('');
+  console.log('📡 Endpoints disponibles:');
+  console.log(`   🏠 Home:      http://localhost:${PORT}`);
+  console.log(`   🛍️ Stock:     http://localhost:${PORT}/stock`);
+  console.log(`   🎨 Gallery:   http://localhost:${PORT}/gallery`);
+  console.log(`   👨‍💼 Admin:     http://localhost:${PORT}/admin`);
+  console.log(`   💳 Checkout:  http://localhost:${PORT}/checkout`);
+  console.log(`   ❤️ Health:     http://localhost:${PORT}/health`);
+  console.log('');
+  console.log('🎯 Características:');
+  console.log(`   ✅ Sistema de carrito con cookies`);
+  console.log(`   ✅ Integración Mercado Pago (Nequi, tarjetas, PSE)`);
+  console.log(`   ✅ Checkout completo`);
+  console.log(`   ✅ Panel admin para productos`);
+  console.log(`   ✅ Gestión de banners`);
+  console.log('');
+  console.log('⚡ Usa Ctrl+C para detener el servidor');
+  console.log('='.repeat(70));
 });
-
-// Iniciar servidor
-startServer();
 
 export default app;
