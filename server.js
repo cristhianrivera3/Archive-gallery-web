@@ -382,7 +382,7 @@ app.get('/producto/:id', async (req, res) => {
 });
 
 // ================================
-// 🛒 SISTEMA DE CARRITO CON COOKIES - CORREGIDO
+// 🛒 SISTEMA DE CARRITO CON COOKIES - EXACTO COMO LO TENÍAS
 // ================================
 
 // Agregar producto al carrito
